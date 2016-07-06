@@ -12,7 +12,8 @@ picture haishin tool
 
 ## deploy
 1. install above packages
-2. `python3 app.py`
+2. set base url in `config.py`
+3. `python3 app.py`
 
 ### gunicorn
 `gunicorn app:app --bind <address>`
