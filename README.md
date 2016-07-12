@@ -10,7 +10,7 @@ picture haishin tool
 - peewee
 - jinja2
 
-## deploy
+## deploy and run
 1. install above packages
 2. set base url in `config.py`
 3. `python3 app.py`
