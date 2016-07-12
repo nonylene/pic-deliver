@@ -18,14 +18,40 @@ from face import Face
 def api_slack():
     text = request.POST.text
     if text == "list":
-        characters = Face.select(Face.character).distinct()
-        res = ', '.join(list(map(lambda x: x.character, characters)))
+        characters = config.CHARACTERS.keys()
+        res = ', '.join(characters)
         return { "text" : res }
-    face = _get_random(text)
-    if face:
-        return { "text" : _build_url(face.pic_path)}
-    else:
+
+    if not text in config.CHARACTERS:
         return ""
+
+    character = config.CHARACTERS[text]
+    face = _get_random(text)
+
+    if not face:
+        return ""
+
+    original_url = _build_url(face.pic_path)
+    thumb_url = _build_url(face.thumb_path)
+
+    return {
+            "username": text,
+            "icon_url": _build_static_url(character["img_path"]),
+            "attachments": [
+                {
+                    "fallback": original_url,
+                    "title": original_url,
+                    "title_link": original_url,
+                    "image_url": thumb_url,
+                    "footer": "{0}: {1:.2f}%, {2}: {3:.2f}%".format(
+                        face.character,
+                        face.probability * 100,
+                        face.character_1,
+                        face.probability_1 * 100
+                        ),
+                    }
+                ]
+            }
 
 @get("/character/<character>/random")
 def character_random(character):
@@ -36,8 +62,15 @@ def character_random(character):
         response.status = 404
         return "not found"
 
+@get('/static/<filepath:path>', name="static")
+def static(filepath):
+    return bottle.static_file(filepath, root="static/")
+
 def _build_url(path):
-    return urljoin(config.BASE_URL, path)
+    return urljoin(config.BASE_PICTURE_URL, path)
+
+def _build_static_url(path):
+    return urljoin(urljoin(config.BASE_URL, "/static/"), path)
 
 def _get_random(character):
     return Face.select().where(Face.character == character).order_by(

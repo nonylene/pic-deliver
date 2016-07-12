@@ -11,8 +11,14 @@ class Face(peewee.Model):
     y = peewee.IntegerField(null = False)
     w = peewee.IntegerField(null = False)
     h = peewee.IntegerField(null = False)
-    character = peewee.TextField(null = True)
+    character = peewee.TextField(null = True, index = True)
+    character_1 = peewee.TextField(null = True)
+    character_2 = peewee.TextField(null = True)
+    probability = peewee.DoubleField(null = True)
+    probability_1 = peewee.DoubleField(null = True)
+    probability_2 = peewee.DoubleField(null = True)
     face_path = peewee.TextField(null = False)
+    thumb_path = peewee.TextField(null = True)
 
     class Meta:
         database = db

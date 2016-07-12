@@ -1,1 +1,12 @@
+BASE_PICTURE_URL = "http://picture.example.com/"
 BASE_URL = "http://example.com/"
+CHARACTERS = {
+        "example": {
+            "name": "eg",
+            "img_path": "img/example.png",
+            },
+        "example_1":{
+            "name": "eg1",
+            "img_path": "img/example_1.png",
+            },
+        }
