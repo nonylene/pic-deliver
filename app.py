@@ -3,7 +3,7 @@
 
 from bottle import get, post, redirect, request, response, jinja2_template as template
 import bottle
-import peewee
+from peewee import fn
 import datetime
 from urllib.parse import urljoin
 from os import path
@@ -22,33 +22,55 @@ def api_slack():
         res = ', '.join(characters)
         return { "text" : res }
 
-    if not text in config.CHARACTERS:
+    if not text:
         return ""
 
-    character = config.CHARACTERS[text]
-    face = _get_random(text)
+    splited = text.split()
 
-    if not face:
-        return ""
+    # filter text
+    for string in splited:
+        if not string in config.CHARACTERS:
+            return ""
 
-    original_url = _build_url(face.pic_path)
-    thumb_url = _build_url(face.thumb_path)
+    # splited -> character list
+    characters = list(map(config.CHARACTERS.get, splited))
+    pic = (Face
+        .select(Face.pic_path)
+        .where(Face.character << splited)
+        .group_by(Face.pic_path)
+        .having(fn.Count(Face.id) == len(characters))
+        .order_by(fn.Random())
+        .limit(1))
+
+    faces = list(Face.select().where(Face.pic_path << pic, Face.character << splited))
+
+    if not faces:
+        return {
+            "username": text,
+            "icon_emoji": ":upside_down_face:",
+            "text": "not found"
+            }
+
+    original_url = _build_url(faces[0].pic_path)
+    thumb_url = _build_url(faces[0].thumb_path)
+
+    footer = " | ".join(map(lambda face: "{0}: {1:.2f}%, {2}: {3:.2f}%".format(
+                        face.character,
+                        face.probability * 100,
+                        face.character_1,
+                        face.probability_1 * 100
+                        ), faces))
 
     return {
             "username": text,
-            "icon_url": _build_static_url(character["img_path"]),
+            "icon_url": _build_static_url(characters[0]["img_path"]),
             "attachments": [
                 {
                     "fallback": original_url,
                     "title": original_url,
                     "title_link": original_url,
                     "image_url": thumb_url,
-                    "footer": "{0}: {1:.2f}%, {2}: {3:.2f}%".format(
-                        face.character,
-                        face.probability * 100,
-                        face.character_1,
-                        face.probability_1 * 100
-                        ),
+                    "footer":footer
                     }
                 ]
             }
@@ -74,7 +96,7 @@ def _build_static_url(path):
 
 def _get_random(character):
     return Face.select().where(Face.character == character).order_by(
-            peewee.fn.Random()).first()
+            fn.Random()).first()
 
 app = bottle.default_app()
 if __name__ == "__main__":
