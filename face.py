@@ -6,7 +6,7 @@ db = peewee.SqliteDatabase(path.join(path.abspath(path.dirname(__file__)), 'main
 
 class Face(peewee.Model):
     story = peewee.IntegerField(null = False)
-    pic_path = peewee.TextField(null = False)
+    pic_path = peewee.TextField(null = False, index = True)
     x = peewee.IntegerField(null = False)
     y = peewee.IntegerField(null = False)
     w = peewee.IntegerField(null = False)
