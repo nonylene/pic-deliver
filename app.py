@@ -38,7 +38,7 @@ def api_slack():
         .select(Face.pic_path)
         .where(Face.character << splited)
         .group_by(Face.pic_path)
-        .having(fn.Count(Face.id) == len(characters))
+        .having(fn.Count(fn.Distinct(Face.character)) > len(characters) - 1)
         .order_by(fn.Random())
         .limit(1))
 
