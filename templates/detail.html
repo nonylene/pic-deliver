@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <script src='/static/js/detail.js'></script>
+    <title>{{ pic_path }}</title>
+    <style>
+      body {
+        font-family : 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', Meiryo, メイリオ, sans-serif;
+      }
+      table {
+        border-collapse: collapse;
+      }
+      table th {
+        background-color: #cccccc;
+      }
+      #characters {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>{{ pic_path }}</h1>
+    <hr>
+    <div id='wrapper'>
+      <canvas height=400 width=800 id="canvas"></canvas>
+      <table id="characters" border=1>
+        <tr>
+          <th>
+            Number
+          </th>
+          <th>
+            character_0
+          </th>
+          <th>
+            probability_0
+          </th>
+          <th>
+            character_1
+          </th>
+          <th>
+            probability_1
+          </th>
+          <th>
+            character_2
+          </th>
+          <th>
+            probability_2
+          </th>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

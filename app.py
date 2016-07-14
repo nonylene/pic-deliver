@@ -7,12 +7,13 @@ from peewee import fn
 import datetime
 from urllib.parse import urljoin
 from os import path
+import html
 
 import config
 
 from face import Face
 
-#bottle.TEMPLATE_PATH.append(path.join(path.abspath(path.dirname(__file__)), 'templates/'))
+bottle.TEMPLATE_PATH.append(path.join(path.abspath(path.dirname(__file__)), 'templates/'))
 
 @post("/api/slack")
 def api_slack():
@@ -79,6 +80,42 @@ def api_slack():
                 ]
             }
 
+@get("/api/detail")
+def detail_api():
+    if not "pic_path" in request.query:
+        response.status = 400
+        return { "error": "'pic_path' parameter not found" }
+
+    pic_path = request.query["pic_path"]
+
+    faces = Face.select().where(Face.pic_path == pic_path)
+
+    if not faces.exists():
+        response.status = 404
+        return { "error": "pic_path '{0}' not found".format(html.escape(pic_path)) }
+
+    return { 
+            "faces": [_face_to_dict(x) for x in faces],
+            "thumb_url": _build_url(faces[0].thumb_path)
+            }
+
+@get("/detail")
+def detail():
+    if not "pic_path" in request.query:
+        response.status = 400
+        return "'pic_path' parameter not found"
+
+    pic_path = request.query["pic_path"]
+
+    faces = Face.select().where(Face.pic_path == pic_path)
+
+    if not faces.exists():
+        response.status = 404
+        return "pic_path '{0}' not found".format(html.escape(pic_path))
+
+    return template("detail.html", pic_path = pic_path)
+
+
 @get("/character/<character>/random")
 def character_random(character):
     face = _get_random(character)
@@ -101,6 +138,23 @@ def _build_static_url(path):
 def _get_random(character):
     return Face.select().where(Face.character == character).order_by(
             fn.Random()).first()
+
+def _face_to_dict(face):
+    return {
+            "x": face.x,
+            "y": face.y,
+            "w": face.w,
+            "h": face.h,
+            "character": face.character,
+            "character_1": face.character_1,
+            "character_2": face.character_2,
+            "probability": face.probability,
+            "probability_1": face.probability_1,
+            "probability_2": face.probability_2,
+            "thumb_path": face.thumb_path,
+            "pic_path": face.pic_path,
+            }
+
 
 app = bottle.default_app()
 if __name__ == "__main__":
