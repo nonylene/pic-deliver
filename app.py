@@ -5,7 +5,7 @@ from bottle import get, post, redirect, request, response, jinja2_template as te
 import bottle
 from peewee import fn
 import datetime
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit, urlencode, urlunsplit
 from os import path
 import html
 
@@ -56,15 +56,18 @@ def api_slack():
             "text": "not found"
             }
 
-    original_url = _build_url(faces[0].pic_path)
+    pic_path = faces[0].pic_path
+    original_url = _build_url(pic_path)
     thumb_url = _build_url(faces[0].thumb_path)
 
-    footer = " | ".join(map(lambda face: "{0}: {1:.2f}%, {2}: {3:.2f}%".format(
+    probabilities = " | ".join(map(lambda face: "{0}: {1:.2f}%, {2}: {3:.2f}%".format(
                         face.character,
                         face.probability * 100,
                         face.character_1,
                         face.probability_1 * 100
                         ), faces))
+
+    footer = "{0}\n{1}".format(_build_detail_url(pic_path), probabilities)
 
     return {
             "username": text,
@@ -134,6 +137,11 @@ def _build_url(path):
 
 def _build_static_url(path):
     return urljoin(urljoin(config.BASE_URL, "/static/"), path)
+
+def _build_detail_url(pic_path):
+    scheme, netloc, path, query_string, fragment = urlsplit(_build_url("/detail"))
+    new_query_string = urlencode({ "pic_path": pic_path })
+    return urlunsplit((scheme, netloc, path, new_query_string, fragment))
 
 def _get_random(character):
     return Face.select().where(Face.character == character).order_by(
