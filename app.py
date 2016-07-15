@@ -67,7 +67,7 @@ def api_slack():
                         face.probability_1 * 100
                         ), faces))
 
-    footer = "{0}\n{1}".format(_build_detail_url(pic_path), probabilities)
+    footer = "Detail: {0}\n{1}".format(_build_detail_url(pic_path), probabilities)
 
     return {
             "username": text,
@@ -139,7 +139,8 @@ def _build_static_url(path):
     return urljoin(urljoin(config.BASE_URL, "/static/"), path)
 
 def _build_detail_url(pic_path):
-    scheme, netloc, path, query_string, fragment = urlsplit(_build_url("/detail"))
+    detail_base_url = urljoin(config.BASE_URL, "/detail")
+    scheme, netloc, path, query_string, fragment = urlsplit(detail_base_url)
     new_query_string = urlencode({ "pic_path": pic_path })
     return urlunsplit((scheme, netloc, path, new_query_string, fragment))
 
