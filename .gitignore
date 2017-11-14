@@ -61,3 +61,4 @@ target/
 # nony
 *.db
 config.py
+.venv/
